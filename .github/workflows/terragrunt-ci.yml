@@ -55,7 +55,7 @@ jobs:
           TF_WORKSPACE: dev
           TERRAGRUNT_AUTO_INIT: "true"
           TERRAGRUNT_AUTO_RETRY: "true"
-        run: terragrunt run-all init --terragrunt-non-interactive --terragrunt-auto-approve
+        run: terragrunt run-all init --terragrunt-non-interactive
 
       - name: Terragrunt Plan
         env:
