@@ -24,12 +24,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+      - name: Verify Environment Variables
+        run: |
+          echo "Checking AWS credentials are set..."
+          if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+            echo "ERROR: AWS_ACCESS_KEY_ID is not set"
+            exit 1
+          fi
+          if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "ERROR: AWS_SECRET_ACCESS_KEY is not set"
+            exit 1
+          fi
+          echo "AWS_ACCESS_KEY_ID is set (length: ${#AWS_ACCESS_KEY_ID})"
+          echo "AWS_SECRET_ACCESS_KEY is set (length: ${#AWS_SECRET_ACCESS_KEY})"
+          echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
 
       - name: Verify AWS Credentials
         run: |
