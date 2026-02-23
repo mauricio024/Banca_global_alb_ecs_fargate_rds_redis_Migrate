@@ -51,11 +51,17 @@ jobs:
           terragrunt --version
 
       - name: Terragrunt Init
-        run: terragrunt run-all init
+        run: |
+          export TF_WORKSPACE=dev
+          terragrunt run-all init --terragrunt-non-interactive
 
       - name: Terragrunt Plan
-        run: terragrunt run-all plan
+        run: |
+          export TF_WORKSPACE=dev
+          terragrunt run-all plan --terragrunt-non-interactive
 
       - name: Terragrunt Apply
         if: github.ref == 'refs/heads/main'
-        run: terragrunt run-all apply --terragrunt-non-interactive
+        run: |
+          export TF_WORKSPACE=dev
+          terragrunt run-all apply --terragrunt-non-interactive

@@ -14,13 +14,18 @@
 
 ## Cambios realizados
 
-### 1. common.hcl
-- ✅ Actualizado el provider AWS para usar `try()` en el profile
+### 1. terragrunt.hcl
+- ✅ Actualizado remote_state config para usar `try()` en el profile
 - ✅ Ahora funciona con perfil local Y con OIDC en GitHub Actions
 
-### 2. GitHub Actions Workflow
+### 2. common/common.hcl
+- ✅ Actualizado el provider AWS para usar `try()` en el profile
+- ✅ Genera provider.tf compatible con OIDC y perfil local
+
+### 3. GitHub Actions Workflow
 - ✅ Configurado con el ARN del role: `arn:aws:iam::996617614114:role/GitHubActions-Terragrunt-Role`
-- ✅ Agregado flag `--terragrunt-non-interactive` para apply automático
+- ✅ Agregado `export TF_WORKSPACE=dev` en cada paso de Terragrunt
+- ✅ Agregado flag `--terragrunt-non-interactive` en todos los comandos
 - ✅ Apply solo se ejecuta en branch `main`
 
 ## Cómo funciona
@@ -36,7 +41,9 @@ terragrunt apply
 1. GitHub Actions solicita credenciales temporales a AWS STS
 2. AWS valida el token OIDC de GitHub
 3. AWS asume el role `GitHubActions-Terragrunt-Role`
-4. Terragrunt se ejecuta con las credenciales temporales (sin profile)
+4. Se establece `TF_WORKSPACE=dev` para usar el workspace correcto
+5. Terragrunt genera `remotebackend.tf` y `provider.tf` en cada recurso
+6. Terragrunt se ejecuta con las credenciales temporales (sin profile)
 
 ## Próximos pasos
 
