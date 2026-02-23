@@ -15,7 +15,6 @@ jobs:
     name: Deploy to DEV
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: read
     env:
       AWS_REGION: us-east-1
@@ -25,20 +24,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials (OIDC)
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::996617614114:role/GitHubActions-Terragrunt-Role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GitHubActions-Terragrunt
 
       - name: Verify AWS Credentials
         run: |
           aws sts get-caller-identity
-          echo "AWS_ACCESS_KEY_ID is set: ${AWS_ACCESS_KEY_ID:+yes}"
-          echo "AWS_SECRET_ACCESS_KEY is set: ${AWS_SECRET_ACCESS_KEY:+yes}"
-          echo "AWS_SESSION_TOKEN is set: ${AWS_SESSION_TOKEN:+yes}"
-          echo "AWS credentials configured successfully via OIDC"
+          echo "AWS credentials configured successfully"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
