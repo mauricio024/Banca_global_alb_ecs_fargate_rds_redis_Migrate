@@ -55,8 +55,6 @@ variable "required_tags" {
 
 provider "aws" {
   region = var.profile[terraform.workspace]["region"]
-  # Profile solo se usa en desarrollo local, GitHub Actions usa OIDC
-  profile = try(var.profile[terraform.workspace]["profile"], null)
 
   default_tags {
     tags = {

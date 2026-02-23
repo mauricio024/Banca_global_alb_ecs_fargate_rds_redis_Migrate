@@ -33,7 +33,6 @@ remote_state {
     if_exists = "overwrite_terragrunt"
   }
   config = {
-    profile              = try(local.common_vars.locals.backend_profile, null)
     region               = local.common_vars.locals.backend_region
     bucket               = local.common_vars.locals.backend_bucket_name
     key                  = local.common_vars.locals.backend_key
