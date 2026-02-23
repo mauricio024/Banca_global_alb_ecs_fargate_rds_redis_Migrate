@@ -4,6 +4,7 @@
 */
 
 resource "aws_elasticache_subnet_group" "main" {
+  count      = var.create_elasticache ? 1 : 0
   name       = local.workspace["subnet_group_name"]
   subnet_ids = var.subnet_ids
 
@@ -11,6 +12,7 @@ resource "aws_elasticache_subnet_group" "main" {
 }
 
 resource "aws_elasticache_replication_group" "main" {
+  count                      = var.create_elasticache ? 1 : 0
   replication_group_id       = local.workspace["cluster_id"]
   description                = "Valkey cache cluster for ${terraform.workspace}"
   engine                     = "valkey"
@@ -19,7 +21,7 @@ resource "aws_elasticache_replication_group" "main" {
   num_cache_clusters         = local.workspace["num_cache_nodes"]
   parameter_group_name       = local.workspace["parameter_group_name"]
   port                       = local.workspace["port"]
-  subnet_group_name          = aws_elasticache_subnet_group.main.name
+  subnet_group_name          = aws_elasticache_subnet_group.main[0].name
   security_group_ids         = var.security_group_ids
   automatic_failover_enabled = false
 
@@ -27,20 +29,21 @@ resource "aws_elasticache_replication_group" "main" {
 }
 
 module "store_ssm" {
+  count   = var.create_elasticache ? 1 : 0
   source  = "cloudposse/ssm-parameter-store/aws"
   version = "0.13.0"
 
   parameter_write = [
     {
       name        = "/${var.project}/${terraform.workspace}/elasticache/cluster_id"
-      value       = aws_elasticache_replication_group.main.id
+      value       = aws_elasticache_replication_group.main[0].id
       type        = "String"
       overwrite   = "true"
       description = "ElastiCache Cluster ID for ${terraform.workspace} environment"
     },
     {
       name        = "/${var.project}/${terraform.workspace}/elasticache/endpoint"
-      value       = aws_elasticache_replication_group.main.primary_endpoint_address
+      value       = aws_elasticache_replication_group.main[0].primary_endpoint_address
       type        = "String"
       overwrite   = "true"
       description = "ElastiCache Endpoint for ${terraform.workspace} environment"

@@ -11,5 +11,6 @@ dependency "vpc" {
 }
 
 inputs = {
-  subnet_ids = dependency.vpc.outputs.database_subnets
+  subnet_ids         = dependency.vpc.outputs.database_subnets
+  create_elasticache = false  # Set to true to create ElastiCache resources
 }

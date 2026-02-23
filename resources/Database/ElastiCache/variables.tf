@@ -27,3 +27,9 @@ variable "tags" {
   description = "Tags to set for all resources"
   default     = {}
 }
+
+variable "create_elasticache" {
+  description = "Whether to create ElastiCache resources"
+  type        = bool
+  default     = true
+}
