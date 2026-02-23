@@ -35,6 +35,9 @@ jobs:
       - name: Verify AWS Credentials
         run: |
           aws sts get-caller-identity
+          echo "AWS_ACCESS_KEY_ID is set: ${AWS_ACCESS_KEY_ID:+yes}"
+          echo "AWS_SECRET_ACCESS_KEY is set: ${AWS_SECRET_ACCESS_KEY:+yes}"
+          echo "AWS_SESSION_TOKEN is set: ${AWS_SESSION_TOKEN:+yes}"
           echo "AWS credentials configured successfully via OIDC"
 
       - name: Setup Terraform
@@ -51,17 +54,20 @@ jobs:
           terragrunt --version
 
       - name: Terragrunt Init
-        run: |
-          export TF_WORKSPACE=dev
-          terragrunt run-all init --terragrunt-non-interactive
+        env:
+          AWS_REGION: us-east-1
+          TF_WORKSPACE: dev
+        run: terragrunt run-all init --terragrunt-non-interactive
 
       - name: Terragrunt Plan
-        run: |
-          export TF_WORKSPACE=dev
-          terragrunt run-all plan --terragrunt-non-interactive
+        env:
+          AWS_REGION: us-east-1
+          TF_WORKSPACE: dev
+        run: terragrunt run-all plan --terragrunt-non-interactive
 
       - name: Terragrunt Apply
         if: github.ref == 'refs/heads/main'
-        run: |
-          export TF_WORKSPACE=dev
-          terragrunt run-all apply --terragrunt-non-interactive
+        env:
+          AWS_REGION: us-east-1
+          TF_WORKSPACE: dev
+        run: terragrunt run-all apply --terragrunt-non-interactive
