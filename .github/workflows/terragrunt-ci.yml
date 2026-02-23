@@ -49,14 +49,13 @@ jobs:
           sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
           terragrunt --version
 
-      - name: Select Terraform Workspace
-        run: terragrunt run-all workspace select dev || terragrunt run-all workspace new dev
-
       - name: Terragrunt Init
         env:
           AWS_REGION: us-east-1
           TF_WORKSPACE: dev
-        run: terragrunt run-all init --terragrunt-non-interactive
+          TERRAGRUNT_AUTO_INIT: "true"
+          TERRAGRUNT_AUTO_RETRY: "true"
+        run: terragrunt run-all init --terragrunt-non-interactive --terragrunt-auto-approve
 
       - name: Terragrunt Plan
         env:
