@@ -1,19 +1,19 @@
 output "replication_group_id" {
   description = "ElastiCache replication group ID"
-  value       = aws_elasticache_replication_group.main.id
+  value       = var.create_elasticache ? aws_elasticache_replication_group.main[0].id : null
 }
 
 output "primary_endpoint_address" {
   description = "Primary endpoint address"
-  value       = aws_elasticache_replication_group.main.primary_endpoint_address
+  value       = var.create_elasticache ? aws_elasticache_replication_group.main[0].primary_endpoint_address : null
 }
 
 output "reader_endpoint_address" {
   description = "Reader endpoint address"
-  value       = aws_elasticache_replication_group.main.reader_endpoint_address
+  value       = var.create_elasticache ? aws_elasticache_replication_group.main[0].reader_endpoint_address : null
 }
 
 output "port" {
   description = "ElastiCache port"
-  value       = aws_elasticache_replication_group.main.port
+  value       = var.create_elasticache ? aws_elasticache_replication_group.main[0].port : null
 }
