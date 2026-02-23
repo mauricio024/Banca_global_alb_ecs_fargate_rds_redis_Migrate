@@ -1,0 +1,151 @@
+name: Terragrunt CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  TF_VERSION: '1.5.7'
+  TG_VERSION: '0.50.17'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  validate:
+    name: Validate Terragrunt
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TG_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Terragrunt Format Check
+        run: |
+          terragrunt hclfmt --terragrunt-check
+        continue-on-error: true
+
+      - name: Terragrunt Validate
+        run: |
+          terragrunt run-all validate --terragrunt-exclude-dir . --terragrunt-non-interactive
+        continue-on-error: true
+
+  plan-dev:
+    name: Plan Dev Environment
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TG_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+
+      - name: Terragrunt Init
+        run: |
+          terragrunt run-all init --terragrunt-exclude-dir . --terragrunt-non-interactive
+
+      - name: Terragrunt Plan
+        run: |
+          terragrunt run-all plan --terragrunt-exclude-dir . --terragrunt-non-interactive
+        env:
+          TF_WORKSPACE: dev
+
+  apply-dev:
+    name: Apply Dev Environment
+    runs-on: ubuntu-latest
+    needs: plan-dev
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: dev
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TG_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+
+      - name: Terragrunt Apply
+        run: |
+          terragrunt run-all apply --terragrunt-exclude-dir . --terragrunt-non-interactive
+        env:
+          TF_WORKSPACE: dev
+
+  apply-prod:
+    name: Apply Prod Environment
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: prod
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TG_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+
+      - name: Terragrunt Apply
+        run: |
+          terragrunt run-all apply --terragrunt-exclude-dir . --terragrunt-non-interactive
+        env:
+          TF_WORKSPACE: prod
