@@ -2,7 +2,7 @@ locals {
   env = {
     default = {
       force_destroy = true
-      bucket_name   = lower("${var.project}-${terraform.workspace}-private")
+      bucket_name   = lower("${var.project}-${terraform.workspace}-FTP")
 
       server_side_encryption_configuration = {
         rule = {
