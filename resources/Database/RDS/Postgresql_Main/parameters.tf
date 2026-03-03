@@ -35,7 +35,7 @@ locals {
 
       backup_retention_period = 0
       skip_final_snapshot     = true
-      deletion_protection     = false
+      deletion_protection     = true
 
       performance_insights_enabled          = false
       performance_insights_retention_period = 0
